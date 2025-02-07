@@ -61,6 +61,8 @@ class PlaygroundView(APIView):
     
     def get_permissions(self):
         permissions = super().get_permissions()
+        print(permissions)
+
 
         if self.request.method.lower() == 'post':
             permissions.append(IsAdminOrOwner())
@@ -68,6 +70,7 @@ class PlaygroundView(APIView):
         if self.request.method.lower() == 'get':
             permissions.append(IsAdminOrClient())
 
+        return permissions
 
 class PlaygroundDetailView(APIView):
     
