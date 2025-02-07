@@ -24,6 +24,8 @@ class PlaygroundView(APIView):
 
         if serializer.is_valid():
             owner = request.user
+
+            # here I'm checking whether objects is created in one session without any problem
             created = serializer.save(owner=owner)
             if not created:
                 return Response(data={"message": "Something went wrong !"},
@@ -35,6 +37,7 @@ class PlaygroundView(APIView):
         return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def get(self, request: Request):
+        # Couldnt do order by distance part as never worked with locations)
         query = request.query_params
         for_date = query.get("for_date")
         start_time = query.get("start_time")
@@ -42,7 +45,8 @@ class PlaygroundView(APIView):
 
         converted_start_time = datetime.strptime(start_time, "%H:%M:%S")
         converted_end_time = datetime.strptime(end_time, "%H:%M:%S")
-
+        
+        # here goes the process of search with given argumens
         if query:
             playgrounds = Playground.objects.exclude(
                 bookings__for_date=for_date,
