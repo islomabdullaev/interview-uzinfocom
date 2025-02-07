@@ -1,0 +1,43 @@
+services:
+  app:
+    container_name: content-app
+    command: >
+      bash -c "
+      python3 manage.py collectstatic --noinput &&
+      python3 manage.py makemigrations &&
+      python3 manage.py migrate &&
+      python3 manage.py runserver 0.0.0.0:8000
+      "
+    build: .
+    env_file:
+      .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    volumes:
+      - ./:/opt/app:rw
+      - ./static:/opt/app/static:rw
+      - ./media:/opt/app/media:rw
+  db:
+    container_name: content-db
+    image: postgres:16.4-alpine3.20
+    env_file:
+      .env
+    environment:
+      - POSTGRES_DB=${CONTENT_POSTGRES_DB_NAME}
+      - POSTGRES_USER=${CONTENT_POSTGRES_USER}
+      - POSTGRES_PASSWORD=${CONTENT_POSTGRES_PASSWORD}
+      - POSTGRES_ENGINE=${CONTENT_PG_ENGINE}
+      - TZ=UTC
+    ports:
+      - ${CONTENT_POSTGRES_PORT}:${CONTENT_POSTGRES_PORT}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "sh -c 'pg_isready -U ${CONTENT_POSTGRES_USER} -d ${CONTENT_POSTGRES_DB_NAME}'" ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+volumes:
+  pgdata:
